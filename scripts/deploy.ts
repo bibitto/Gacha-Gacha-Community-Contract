@@ -1,23 +1,41 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+    // GachaPon.sol
+    const GachaPon = await ethers.getContractFactory("GachaPon");
+    const gachaPon = await GachaPon.deploy();
+    await gachaPon.deployed();
+    console.log("gachaPon address: ", gachaPon.address);
 
-  const lockedAmount = ethers.utils.parseEther("1");
+    // GachaMintExtension.sol
+    const slashMintFee = 30; // usd
+    const GachaMintExtension = await ethers.getContractFactory("GachaMintExtension");
+    const gachaMintExtension = await GachaMintExtension.deploy(gachaPon.address, slashMintFee);
+    await gachaMintExtension.deployed();
+    console.log("gachaMintExtension address: ", gachaMintExtension.address);
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    // GachaPaymentExtension.sol
+    const commissionReceiver = gachaPon.owner();
+    const commissionPercentage = 2; // %
+    const GachaPaymentExtension = await ethers.getContractFactory("GachaPaymentExtension");
+    const gachaPaymentExtension = await GachaPaymentExtension.deploy(
+        gachaPon.address,
+        commissionReceiver,
+        commissionPercentage
+    );
+    await gachaPaymentExtension.deployed();
+    console.log("gachaPaymentExtension address: ", gachaPaymentExtension.address);
 
-  await lock.deployed();
+    // register the slash mint extension to GachaPon
+    await gachaPon.updateSlashMintExtension(gachaMintExtension.address);
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
+    // mint community gacha NFT
+    const gachaFee = 1; // usd
+    const tokenURI = "";
+    await gachaPon.mint(gachaPon.owner(), tokenURI, gachaFee);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });
