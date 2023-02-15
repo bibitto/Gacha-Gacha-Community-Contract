@@ -388,30 +388,36 @@ contract GachaPon is ERC721URIStorage, Ownable, IERC998ERC721TopDown, IERC998ERC
     function getAllCapsuleTokenURIs(address _contract, uint256[] memory tokenIds) public view returns (string[] memory uris) {
         string[] memory uris_ = new string[](tokenIds.length);
         for (uint256 i; i < tokenIds.length; i++) {
-            uris[i] = ERC721URIStorage(_contract).tokenURI(tokenIds[i]);
+            uris_[i] = ERC721URIStorage(_contract).tokenURI(tokenIds[i]);
         }
         return uris_;
     }
 
-    function getAllGachaBoxDatas() public view returns (string[] memory uris, uint256[] memory fees) {
+    function getAllGachaBoxDatas() public view returns (uint256[] memory ids, string[] memory uris, uint256[] memory fees) {
+        uint256[] memory tokenIds_ = new uint256[](tokenCount);
         string[] memory uris_ = new string[](tokenCount);
         uint256[] memory fees_ = new uint256[](tokenCount);
         for (uint256 i; i < tokenCount; i++) {
-            uris_[i] = tokenURI(i + 1);
-            fees_[i] = gachaFees[i + 1];
+            uint256 tokenId_ = i + 1;
+            tokenIds_[i] = tokenId_;
+            uris_[i] = tokenURI(tokenId_);
+            fees_[i] = gachaFees[tokenId_];
         }
-        return (uris_, fees_);
+        return (tokenIds_, uris_, fees_);
     }
 
-    function getOpendGachaBoxURIs() public view returns (string[] memory uris, uint256[] memory fees) {
+    function getOpendGachaBoxURIs() public view returns (uint256[] memory ids, string[] memory uris, uint256[] memory fees) {
+        uint256[] memory tokenIds_ = new uint256[](tokenCount);
         string[] memory uris_ = new string[](tokenCount);
         uint256[] memory fees_ = new uint256[](tokenCount);
         for (uint256 i; i < tokenCount; i++) {
             if (getApproved(i + 1) != address(0)) {
+                uint256 tokenId_ = i + 1;
+                tokenIds_[i] = tokenId_;
                 uris_[i] = tokenURI(i + 1);
                 fees_[i] = gachaFees[i + 1];
             }
         }
-        return (uris_, fees_);
+        return (tokenIds_, uris_, fees_);
     }
 }
