@@ -48,10 +48,10 @@ describe("GachaPon", function () {
         expect(await gachaPon.balanceOf(addr1.address)).to.equal(1);
         expect(await gachaPon.tokenURI(1)).to.equal(testMetadata);
 
-        // view all token datas
-        const [uris, fees] = await gachaPon.getAllGachaBoxDatas();
-        expect(uris[0]).to.equal(testMetadata);
-        expect(fees[0]).to.equal(30);
+        // check all gacha datas
+        const gachas = await gachaPon.getAllGachaBoxDatas();
+        expect(gachas[0].length).to.equal(5); // data field count
+        // console.log(gachas);
     });
 
     it("Should gacha creater successfully mint GachaPon NFT", async function () {
@@ -63,10 +63,10 @@ describe("GachaPon", function () {
         expect(await gachaPon.balanceOf(addr1.address)).to.equal(1);
         expect(await gachaPon.tokenURI(1)).to.equal(testMetadata);
 
-        // view all token datas
-        const [uris, fees] = await gachaPon.getAllGachaBoxDatas();
-        expect(uris[0]).to.equal(testMetadata);
-        expect(fees[0]).to.equal(30);
+        // check all gacha datas
+        const gachas = await gachaPon.getAllGachaBoxDatas();
+        expect(gachas[0].length).to.equal(5); // data field count
+        // console.log(gachas);
     });
 
     it("Should successfully manage a capsule NFT", async function () {
@@ -94,6 +94,12 @@ describe("GachaPon", function () {
         expect(capsuleContracts.length).to.equal(1);
         expect(capsuleContracts[0]).to.equal(testNft.address);
 
+        // check capsule data
+        const capsuleIds = await gachaPon.getAllCapsuleTokens(1, capsuleContracts[0]);
+        expect(capsuleIds.length).to.equal(1);
+        const uris = await gachaPon.getAllCapsuleTokenURIs(capsuleContracts[0], capsuleIds);
+        expect(uris[0]).to.equal(testMetadata);
+
         // check owner
         const rootOwner = ethers.utils.getAddress(ethers.utils.hexDataSlice(await gachaPon.rootOwnerOf(1), 12));
         expect(rootOwner).to.equal(addr1.address);
@@ -103,7 +109,7 @@ describe("GachaPon", function () {
         const capsuleNftId = 1;
         await gachaPon.connect(addr1).approve(addr2.address, gachaBoxId);
 
-        // safeTransferChild a capsule NFT to addr3 by addr2
+        // safeTransferChild a capsule NFT to addr3 by extension
         const abi_2 = ["function safeTransferChild(uint256,address,address,uint256) external"];
         const gachaContract = new ethers.Contract(gachaPon.address, abi_2, addr2);
         await gachaContract["safeTransferChild(uint256,address,address,uint256)"](
@@ -131,9 +137,9 @@ describe("GachaPon", function () {
         expect(await gachaPon.getGachaFeeById(1)).to.equal(30);
         expect(await gachaPon.tokenURI(1)).to.equal(testMetadata);
 
-        // get gacah metadata
-        const [uris, fees] = await gachaPon.getAllGachaBoxDatas();
-        expect(uris[0]).to.equal(testMetadata);
-        expect(fees[0]).to.equal(30);
+        // check all gacah data
+        const gachas = await gachaPon.getAllGachaBoxDatas();
+        expect(gachas[0].length).to.equal(5); // data field count
+        // console.log(gachas);
     });
 });

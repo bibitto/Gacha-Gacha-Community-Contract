@@ -15,6 +15,14 @@ import "hardhat/console.sol";
 
 contract GachaPon is ERC721URIStorage, Ownable, IERC998ERC721TopDown, IERC998ERC721TopDownEnumerable  {
 
+    struct GachaData {
+        uint256 id;
+        string uri;
+        uint256 fee;
+        address rootOwner;
+        bool isOpened;
+    }
+
     bytes4 constant ERC998_MAGIC_VALUE = 0xcd740db5;
     //from zepellin ERC721Receiver.sol
     bytes4 constant ERC721_RECEIVED_OLD = 0xf0b9e5ba; //old version
@@ -385,39 +393,30 @@ contract GachaPon is ERC721URIStorage, Ownable, IERC998ERC721TopDown, IERC998ERC
         return childTokens[_tokenId][_capsuleContract];
     }
 
-    function getAllCapsuleTokenURIs(address _contract, uint256[] memory tokenIds) public view returns (string[] memory uris) {
-        string[] memory uris_ = new string[](tokenIds.length);
-        for (uint256 i; i < tokenIds.length; i++) {
-            uris_[i] = ERC721URIStorage(_contract).tokenURI(tokenIds[i]);
+    function getAllCapsuleTokenURIs(address _contract, uint256[] memory _tokenIds) public view returns (string[] memory uris) {
+        string[] memory uris_ = new string[](_tokenIds.length);
+        for (uint256 i; i < _tokenIds.length; i++) {
+            try ERC721URIStorage(_contract).tokenURI(_tokenIds[i]) returns (string memory uri) {
+                uris_[i] = uri;
+            } catch {
+                try ERC721(_contract).tokenURI(_tokenIds[i]) returns (string memory uri) {
+                    uris_[i] = uri;
+                } catch {
+                    console.log('does not exist tokenURI function');
+                }
+            }
         }
         return uris_;
     }
 
-    function getAllGachaBoxDatas() public view returns (uint256[] memory ids, string[] memory uris, uint256[] memory fees) {
-        uint256[] memory tokenIds_ = new uint256[](tokenCount);
-        string[] memory uris_ = new string[](tokenCount);
-        uint256[] memory fees_ = new uint256[](tokenCount);
+    function getAllGachaBoxDatas() public view returns (GachaData[] memory gachas) {
+        GachaData[] memory _gachas = new GachaData[](tokenCount);
         for (uint256 i; i < tokenCount; i++) {
             uint256 tokenId_ = i + 1;
-            tokenIds_[i] = tokenId_;
-            uris_[i] = tokenURI(tokenId_);
-            fees_[i] = gachaFees[tokenId_];
+            bool isOpend = tokenIdToPaymentExtension[tokenId_] == address(0) ? false : GachaPaymentExtension(tokenIdToPaymentExtension[tokenId_]).checkRegisteredGachaPonId() != 0;
+            address rootOwner = address(uint160(bytes20(uint160(uint256(rootOwnerOf(tokenId_))))));
+            _gachas[i] = GachaData(tokenId_, tokenURI(tokenId_), gachaFees[tokenId_], rootOwner, isOpend);
         }
-        return (tokenIds_, uris_, fees_);
-    }
-
-    function getOpendGachaBoxURIs() public view returns (uint256[] memory ids, string[] memory uris, uint256[] memory fees) {
-        uint256[] memory tokenIds_ = new uint256[](tokenCount);
-        string[] memory uris_ = new string[](tokenCount);
-        uint256[] memory fees_ = new uint256[](tokenCount);
-        for (uint256 i; i < tokenCount; i++) {
-            if (getApproved(i + 1) != address(0)) {
-                uint256 tokenId_ = i + 1;
-                tokenIds_[i] = tokenId_;
-                uris_[i] = tokenURI(i + 1);
-                fees_[i] = gachaFees[i + 1];
-            }
-        }
-        return (tokenIds_, uris_, fees_);
+        return _gachas;
     }
 }
