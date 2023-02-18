@@ -9,7 +9,7 @@ import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import "./interfaces/IERC998ERC721TopDown.sol";
 import "./interfaces/IERC998ERC721TopDownEnumerable.sol";
 import "./interfaces/IERC998ERC721BottomUp.sol";
-import "./GachaPaymentExtension.sol";
+import "./slash-payment/v2/GachaPaymentExtension.sol";
 
 import "hardhat/console.sol";
 

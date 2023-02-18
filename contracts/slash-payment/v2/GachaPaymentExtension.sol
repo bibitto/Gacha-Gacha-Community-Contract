@@ -4,9 +4,9 @@ pragma solidity >=0.8.18;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./GachaPon.sol";
-import "./interfaces/ISlashCustomPlugin.sol";
-import "./libs/UniversalERC20.sol";
+import "../../GachaPon.sol";
+import "../../interfaces/ISlashCustomPlugin.sol";
+import "../../libs/UniversalERC20.sol";
 
 contract GachaPaymentExtension is ISlashCustomPlugin, Ownable {
     using UniversalERC20 for IERC20;

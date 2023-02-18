@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.18;
 
-import './GachaPon.sol';
+import '../../GachaPon.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
-import './interfaces/ISlashCustomPlugin.sol';
-import './libs/UniversalERC20.sol';
+import '../../interfaces/ISlashCustomPlugin.sol';
+import '../../libs/UniversalERC20.sol';
 
 contract GachaMintExtension is ISlashCustomPlugin, Ownable {
     using UniversalERC20 for IERC20;
@@ -28,7 +28,7 @@ contract GachaMintExtension is ISlashCustomPlugin, Ownable {
     }
 
     function getMintFee() public view returns(uint256 fee) {
-      return _fee;
+        return _fee;
     }
 
     function receivePayment(
